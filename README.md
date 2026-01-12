@@ -50,6 +50,7 @@ Options:
 | `esc`    | Quit the timer         |
 | `ctrl+c` | Quit the timer         |
 | `p`      | Pause/Resume the timer |
+| `space`  | Pause/Resume the timer |
 
 ## License
 
