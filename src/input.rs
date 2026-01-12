@@ -7,8 +7,8 @@ pub enum InputEvent {
     TogglePause,
 }
 
-pub fn read_input() -> InputEvent {
-    if event::poll(Duration::from_millis(50)).unwrap_or(false) {
+pub fn read_input(timeout: Duration) -> InputEvent {
+    if event::poll(timeout).unwrap_or(false) {
         if let Ok(Event::Key(key)) = event::read() {
             if key.kind == KeyEventKind::Press {
                 match key.code {

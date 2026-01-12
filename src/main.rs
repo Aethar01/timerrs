@@ -41,7 +41,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut run_loop = || -> anyhow::Result<()> {
         loop {
-            match input::read_input() {
+            match input::read_input(Duration::from_millis(50)) {
                 InputEvent::Quit => break,
                 InputEvent::TogglePause => timer.toggle_pause(),
                 InputEvent::None => {}
@@ -52,8 +52,6 @@ fn main() -> anyhow::Result<()> {
             if timer.is_finished() {
                 break;
             }
-
-            std::thread::sleep(Duration::from_millis(50));
         }
         Ok(())
     };

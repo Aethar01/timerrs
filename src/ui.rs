@@ -8,18 +8,27 @@ use std::io::{self, Stdout, Write};
 
 pub struct Ui {
     stdout: Stdout,
+    last_size: Option<(u16, u16)>,
 }
 
 impl Ui {
     pub fn new() -> Self {
         Self {
             stdout: io::stdout(),
+            last_size: None,
         }
     }
 
     pub fn draw(&mut self, timer: &Timer, color: Color, fullscreen: bool) -> io::Result<()> {
         // define constants
         let (cols, rows) = terminal::size()?;
+        
+        let mut full_clear = false;
+        if self.last_size != Some((cols, rows)) {
+            full_clear = true;
+            self.last_size = Some((cols, rows));
+        }
+
         let progress = timer.progress();
         let percent = (progress * 100.0) as u16;
         let percent_str = format!(" {:>3}%", percent);
@@ -66,7 +75,14 @@ impl Ui {
 
         // clear the drawing area
         if fullscreen {
-            self.stdout.queue(Clear(ClearType::All))?;
+            if full_clear {
+                self.stdout.queue(Clear(ClearType::All))?;
+            } else {
+                self.stdout.queue(cursor::MoveTo(0, text_row))?;
+                self.stdout.queue(Clear(ClearType::CurrentLine))?;
+                self.stdout.queue(cursor::MoveTo(0, text_row + 1))?;
+                self.stdout.queue(Clear(ClearType::CurrentLine))?;
+            }
             self.stdout.queue(cursor::MoveTo(text_col, text_row))?;
         } else {
             self.stdout.queue(cursor::MoveToColumn(0))?;
