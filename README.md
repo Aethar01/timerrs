@@ -7,7 +7,7 @@
 
 # timerrs
 
-`timerrs` is a simple timer for the command line.
+`timerrs` is a simple timer for the terminal
 
 Inspired by [timer](https://github.com/caarlos0/timer).
 
