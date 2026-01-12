@@ -17,6 +17,7 @@ pub fn read_input() -> InputEvent {
                         return InputEvent::Quit;
                     }
                     KeyCode::Char('p') => return InputEvent::TogglePause,
+                    KeyCode::Char(' ') => return InputEvent::TogglePause,
                     _ => {}
                 }
             }
