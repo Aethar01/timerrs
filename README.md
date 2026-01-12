@@ -23,6 +23,14 @@ cd lrclibfetch
 cargo build --release
 ```
 
+### For Arch based systems
+
+A package for timerrs can be found on the AUR [here](https://aur.archlinux.org/packages/timerrs), or use your favourite AUR helper (yay, paru, etc.):
+
+```bash
+yay -S timerrs
+```
+
 ## Usage
 
 ```
