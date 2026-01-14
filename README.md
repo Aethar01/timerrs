@@ -46,6 +46,7 @@ Options:
   -c, --color <COLOR>  Color of the filled progress bar [default: white]
   -f, --fullscreen     Run the timer in fullscreen mode (clears terminal and centers UI)
   -v, --verbose        Enable verbose logging
+  -s, --no-status      Disable the status bar
   -h, --help           Print help
   -V, --version        Print version
 ```
