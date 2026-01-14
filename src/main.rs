@@ -18,31 +18,32 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     env_logger::Builder::new()
-        .filter_level(if args.verbose {
-            log::LevelFilter::Warn
-        } else {
-            log::LevelFilter::Error
+        .filter_level(match args.verbose {
+            true => log::LevelFilter::Warn,
+            false => log::LevelFilter::Error,
         })
-        .format_timestamp(None)
+        .format_module_path(false)
         .init();
 
-    let mut timer = Timer::new(args.name.clone(), args.duration);
+    let mut timer = Timer::new(args.name, args.duration);
     let mut ui = Ui::new();
 
     terminal::enable_raw_mode()?;
-    if args.fullscreen {
-        io::stdout().execute(EnterAlternateScreen)?;
-        io::stdout().execute(cursor::Hide)?;
-    } else {
-        if args.no_status {
+    match (args.fullscreen, args.no_status) {
+        (true, _) => {
+            io::stdout().execute(EnterAlternateScreen)?;
+        }
+        (false, true) => {
             println!();
             io::stdout().execute(cursor::MoveUp(1))?;
-        } else {
-            println!("\n");
+        }
+        (false, false) => {
+            println!();
+            println!();
             io::stdout().execute(cursor::MoveUp(2))?;
         }
-        io::stdout().execute(cursor::Hide)?;
     }
+    io::stdout().execute(cursor::Hide)?;
 
     let mut run_loop = || -> anyhow::Result<()> {
         loop {
@@ -64,35 +65,33 @@ fn main() -> anyhow::Result<()> {
     let res = run_loop();
 
     // cleanup
-    if args.fullscreen {
-        io::stdout().execute(cursor::Show)?;
-        io::stdout().execute(LeaveAlternateScreen)?;
-    } else {
-        if args.no_status {
+    match (args.fullscreen, args.no_status) {
+        (true, _) => {
+            io::stdout().execute(LeaveAlternateScreen)?;
+        }
+        (false, true) => {
             io::stdout().execute(cursor::MoveDown(1))?;
-        } else {
+        }
+        (false, false) => {
             io::stdout().execute(cursor::MoveDown(2))?;
         }
-        io::stdout().execute(cursor::MoveToColumn(0))?;
     }
+    io::stdout().execute(cursor::MoveToColumn(0))?;
     terminal::disable_raw_mode()?;
 
     if let Err(e) = res {
         eprintln!("Error: {}", e);
     } else if timer.is_finished() {
-        if let Some(name) = &timer.name {
-            log::warn!("Timer '{}' finished!", name);
-        } else {
-            log::warn!("Timer finished!");
+        match &timer.name {
+            Some(name) => log::warn!("Timer '{}' finished!", name),
+            None => log::warn!("Timer finished!"),
         }
     } else {
-        if let Some(name) = &timer.name {
-            log::warn!("Timer '{}' cancelled.", name);
-        } else {
-            log::warn!("Timer cancelled.");
+        match &timer.name {
+            Some(name) => log::warn!("Timer '{}' cancelled.", name),
+            None => log::warn!("Timer cancelled."),
         }
         std::process::exit(1);
     }
-
     Ok(())
 }
