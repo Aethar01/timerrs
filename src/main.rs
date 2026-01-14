@@ -34,8 +34,13 @@ fn main() -> anyhow::Result<()> {
         io::stdout().execute(EnterAlternateScreen)?;
         io::stdout().execute(cursor::Hide)?;
     } else {
-        println!("\n");
-        io::stdout().execute(cursor::MoveUp(2))?;
+        if args.no_status {
+            println!();
+            io::stdout().execute(cursor::MoveUp(1))?;
+        } else {
+            println!("\n");
+            io::stdout().execute(cursor::MoveUp(2))?;
+        }
         io::stdout().execute(cursor::Hide)?;
     }
 
@@ -47,7 +52,7 @@ fn main() -> anyhow::Result<()> {
                 InputEvent::None => {}
             }
 
-            ui.draw(&timer, args.color, args.fullscreen)?;
+            ui.draw(&timer, args.color, args.fullscreen, args.no_status)?;
 
             if timer.is_finished() {
                 break;
@@ -63,7 +68,11 @@ fn main() -> anyhow::Result<()> {
         io::stdout().execute(cursor::Show)?;
         io::stdout().execute(LeaveAlternateScreen)?;
     } else {
-        io::stdout().execute(cursor::MoveDown(2))?;
+        if args.no_status {
+            io::stdout().execute(cursor::MoveDown(1))?;
+        } else {
+            io::stdout().execute(cursor::MoveDown(2))?;
+        }
         io::stdout().execute(cursor::MoveToColumn(0))?;
     }
     terminal::disable_raw_mode()?;

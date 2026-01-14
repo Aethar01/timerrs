@@ -24,6 +24,10 @@ pub struct Args {
     /// Enable verbose logging
     #[arg(short, long)]
     pub verbose: bool,
+
+    /// Disable the status bar
+    #[arg(short='s', long)]
+    pub no_status: bool,
 }
 
 fn parse_duration(arg: &str) -> Result<Duration, humantime::DurationError> {
