@@ -19,7 +19,7 @@ Ensure you have [Rust and Cargo](https://rustup.rs/) installed.
 
 ```bash
 git clone https://github.com/Aethar01/timerrs.git
-cd lrclibfetch
+cd timerrs
 cargo build --release
 ```
 
