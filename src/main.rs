@@ -9,21 +9,14 @@ use crossterm::{
     ExecutableCommand, cursor,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use std::error::Error;
 use input::InputEvent;
 use std::{io, time::Duration};
 use timer::Timer;
 use ui::Ui;
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
-
-    env_logger::Builder::new()
-        .filter_level(match args.verbose {
-            true => log::LevelFilter::Warn,
-            false => log::LevelFilter::Error,
-        })
-        .format_module_path(false)
-        .init();
 
     let mut timer = Timer::new(args.name, args.duration);
     let mut ui = Ui::new();
@@ -45,7 +38,7 @@ fn main() -> anyhow::Result<()> {
     }
     io::stdout().execute(cursor::Hide)?;
 
-    let mut run_loop = || -> anyhow::Result<()> {
+    let mut run_loop = || -> Result<(), Box<dyn Error>> {
         loop {
             match input::read_input(Duration::from_millis(50)) {
                 InputEvent::Quit => break,
@@ -82,14 +75,18 @@ fn main() -> anyhow::Result<()> {
     if let Err(e) = res {
         eprintln!("Error: {}", e);
     } else if timer.is_finished() {
-        match &timer.name {
-            Some(name) => log::warn!("Timer '{}' finished!", name),
-            None => log::warn!("Timer finished!"),
+        if args.verbose {
+            match &timer.name {
+                Some(name) => eprintln!("Timer '{}' finished!", name),
+                None => eprintln!("Timer finished!"),
+            }
         }
     } else {
-        match &timer.name {
-            Some(name) => log::warn!("Timer '{}' cancelled.", name),
-            None => log::warn!("Timer cancelled."),
+        if args.verbose {
+            match &timer.name {
+                Some(name) => eprintln!("Timer '{}' cancelled.", name),
+                None => eprintln!("Timer cancelled."),
+            }
         }
         std::process::exit(1);
     }
