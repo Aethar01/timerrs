@@ -20,6 +20,10 @@ impl Ui {
         }
     }
 
+    pub fn conemu_reset_progress(&mut self) -> io::Result<()> {
+        self.set_conemu_progress(0, 0)
+    }
+
     pub fn draw(
         &mut self,
         timer: &Timer,
@@ -62,7 +66,15 @@ impl Ui {
             &percent_str,
         )?;
 
+        let conemu_state = if timer.is_paused { 4 } else { 1 };
+        self.set_conemu_progress(conemu_state, (progress * 100.0) as u16)?;
+
         self.stdout.flush()?;
+        Ok(())
+    }
+
+    fn set_conemu_progress(&mut self, state: u16, progress: u16) -> io::Result<()> {
+        write!(self.stdout, "\x1b]9;4;{};{}\x07", state, progress)?;
         Ok(())
     }
 

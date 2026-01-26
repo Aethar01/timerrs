@@ -69,6 +69,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             io::stdout().execute(cursor::MoveDown(2))?;
         }
     }
+    ui.conemu_reset_progress()?;
     io::stdout().execute(cursor::MoveToColumn(0))?;
     terminal::disable_raw_mode()?;
 
