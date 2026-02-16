@@ -47,6 +47,7 @@ Options:
   -f, --fullscreen     Run the timer in fullscreen mode (clears terminal and centers UI)
   -v, --verbose        Enable verbose logging
   -s, --no-status      Disable the status bar
+  -u, --no-ui          Disable the UI
   -N, --notify         Enable dunst notifications with progress bar
   -h, --help           Print help
   -V, --version        Print version
@@ -69,7 +70,17 @@ Options:
 ### Usage
 
 ```bash
-timerrsctl <NAME> <COMMAND>
+Control running timerrs instances
+
+Usage: timerrsctl <NAME> <COMMAND>
+
+Arguments:
+  <NAME>     Name of the timer to control (unnamed timers cannot be controlled)
+  <COMMAND>  Command to send to the timer [possible values: pause, resume, toggle, quit]
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
 ```
 
 ### Commands
@@ -81,7 +92,7 @@ timerrsctl <NAME> <COMMAND>
 | `toggle` | Pause/Resume the timer |
 | `quit`   | Quit the timer         |
 
-Note: `timerrsctl` only works if the `timerrs` instance was started with a `--name`.
+Note: `timerrsctl` only works if the `timerrs` instance was started with `--name`.
 
 ## License
 
