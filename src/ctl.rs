@@ -6,7 +6,7 @@ use std::process::exit;
 #[derive(Parser, Debug)]
 #[command(version, about = "Control running timerrs instances", long_about = None)]
 struct Args {
-    /// Name of the timer to control (Un-named timers cannot be controlled)
+    /// Name of the timer to control (unnamed timers cannot be controlled)
     name: String,
 
     /// Command to send to the timer
