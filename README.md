@@ -23,12 +23,6 @@ cd timerrs
 cargo build --release
 ```
 
-To build without dunst notification support:
-
-```bash
-cargo build --release --no-default-features
-```
-
 ### For Arch based systems
 
 A package for timerrs can be found on the AUR [here](https://aur.archlinux.org/packages/timerrs), or use your favourite AUR helper (yay, paru, etc.):

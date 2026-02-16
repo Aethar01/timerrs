@@ -1,21 +1,14 @@
 use crate::args::Args;
 use crate::timer::Timer;
-#[cfg(feature = "notify")]
 use std::process::Command;
-#[cfg(feature = "notify")]
 use std::time::{Duration, Instant};
 
-#[cfg(feature = "notify")]
 pub struct NotificationState {
     last_notify: Instant,
     enabled: bool,
 }
 
-#[cfg(not(feature = "notify"))]
-pub struct NotificationState;
-
 impl NotificationState {
-    #[cfg(feature = "notify")]
     pub fn new(args: &Args) -> Result<Self, String> {
         if args.notify {
             if Command::new("notify-send")
@@ -36,12 +29,6 @@ impl NotificationState {
         })
     }
 
-    #[cfg(not(feature = "notify"))]
-    pub fn new(_args: &Args) -> Result<Self, String> {
-        Ok(Self)
-    }
-
-    #[cfg(feature = "notify")]
     pub fn update(&mut self, timer: &Timer) {
         if !self.enabled {
             return;
@@ -53,10 +40,6 @@ impl NotificationState {
         }
     }
 
-    #[cfg(not(feature = "notify"))]
-    pub fn update(&mut self, _timer: &Timer) {}
-
-    #[cfg(feature = "notify")]
     pub fn force_update(&mut self, timer: &Timer) {
         if !self.enabled {
             return;
@@ -65,10 +48,6 @@ impl NotificationState {
         self.last_notify = Instant::now();
     }
 
-    #[cfg(not(feature = "notify"))]
-    pub fn force_update(&mut self, _timer: &Timer) {}
-
-    #[cfg(feature = "notify")]
     fn send(&self, timer: &Timer) {
         let name = timer.name.as_deref().unwrap_or("Timer");
         let progress = (timer.progress() * 100.0) as i32;

@@ -34,7 +34,6 @@ pub struct Args {
     pub no_ui: bool,
 
     /// Enable dunst notifications with progress bar
-    #[cfg(feature = "notify")]
     #[arg(short = 'N', long)]
     pub notify: bool,
 }
