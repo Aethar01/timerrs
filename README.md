@@ -13,6 +13,10 @@ Inspired by [timer](https://github.com/caarlos0/timer).
 
 ## Installation
 
+### Optional Dependencies
+
+- [libnotify](https://github.com/GNOME/libnotify) (for notify-send utility)
+
 ### From Source
 
 Ensure you have [Rust and Cargo](https://rustup.rs/) installed.
