@@ -1,5 +1,6 @@
 mod args;
 mod input;
+mod ipc;
 mod timer;
 mod ui;
 
@@ -14,12 +15,18 @@ use input::InputEvent;
 use std::{io, time::Duration};
 use timer::Timer;
 use ui::Ui;
+use std::sync::mpsc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
-    let mut timer = Timer::new(args.name, args.duration);
+    let mut timer = Timer::new(args.name.clone(), args.duration);
     let mut ui = Ui::new();
+
+    let (tx, rx) = mpsc::channel();
+    if let Some(name) = &args.name {
+        ipc::start_listener(name.clone(), tx.clone());
+    }
 
     terminal::enable_raw_mode()?;
     match (args.fullscreen, args.no_status, args.no_ui) {
@@ -41,10 +48,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut run_loop = || -> Result<(), Box<dyn Error>> {
         loop {
+            // Handle keyboard input
             match input::read_input(Duration::from_millis(50)) {
                 InputEvent::Quit => break,
                 InputEvent::TogglePause => timer.toggle_pause(),
+                InputEvent::Pause => timer.pause(),
+                InputEvent::Resume => timer.resume(),
                 InputEvent::None => {}
+            }
+
+            // Handle IPC input
+            while let Ok(event) = rx.try_recv() {
+                match event {
+                    InputEvent::Quit => return Ok(()),
+                    InputEvent::TogglePause => timer.toggle_pause(),
+                    InputEvent::Pause => timer.pause(),
+                    InputEvent::Resume => timer.resume(),
+                    InputEvent::None => {}
+                }
             }
 
             if !args.no_ui {
@@ -61,6 +82,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let res = run_loop();
 
     // cleanup
+    if let Some(name) = &args.name {
+        ipc::cleanup(name);
+    }
     match (args.fullscreen, args.no_status, args.no_ui) {
         (true, _, false) => {
             io::stdout().execute(LeaveAlternateScreen)?;

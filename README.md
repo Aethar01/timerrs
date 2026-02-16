@@ -61,6 +61,27 @@ Options:
 | `p`      | Pause/Resume the timer |
 | `space`  | Pause/Resume the timer |
 
+## timerrsctl
+
+`timerrsctl` is a tool to control running `timerrs` instances.
+
+### Usage
+
+```bash
+timerrsctl <NAME> <COMMAND>
+```
+
+### Commands
+
+| Command | Action                 |
+| ---     | ---                    |
+| `pause`  | Pause the timer        |
+| `resume` | Resume the timer       |
+| `toggle` | Pause/Resume the timer |
+| `quit`   | Quit the timer         |
+
+Note: `timerrsctl` only works if the `timerrs` instance was started with a `--name`.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

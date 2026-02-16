@@ -24,14 +24,26 @@ impl Timer {
 
     pub fn toggle_pause(&mut self) {
         if self.is_paused {
-            self.resume_time = Some(Instant::now());
-            self.is_paused = false;
+            self.resume();
         } else {
+            self.pause();
+        }
+    }
+
+    pub fn pause(&mut self) {
+        if !self.is_paused {
             if let Some(resume_time) = self.resume_time {
                 self.elapsed_before_pause += resume_time.elapsed();
             }
             self.resume_time = None;
             self.is_paused = true;
+        }
+    }
+
+    pub fn resume(&mut self) {
+        if self.is_paused {
+            self.resume_time = Some(Instant::now());
+            self.is_paused = false;
         }
     }
 

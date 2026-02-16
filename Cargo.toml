@@ -18,3 +18,11 @@ opt-level = "z"
 strip = true
 lto = true
 codegen-units = 1
+
+[[bin]]
+name = "timerrs"
+path = "src/main.rs"
+
+[[bin]]
+name = "timerrsctl"
+path = "src/ctl.rs"

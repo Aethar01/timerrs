@@ -5,6 +5,8 @@ pub enum InputEvent {
     None,
     Quit,
     TogglePause,
+    Pause,
+    Resume,
 }
 
 pub fn read_input(timeout: Duration) -> InputEvent {
