@@ -1,6 +1,7 @@
 mod args;
 mod input;
 mod ipc;
+mod notification;
 mod timer;
 mod ui;
 
@@ -10,12 +11,14 @@ use crossterm::{
     ExecutableCommand, cursor,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::error::Error;
 use input::InputEvent;
-use std::{io, time::Duration};
+use notification::NotificationState;
+use std::error::Error;
+use std::io;
+use std::sync::mpsc;
+use std::time::Duration;
 use timer::Timer;
 use ui::Ui;
-use std::sync::mpsc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
@@ -27,6 +30,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(name) = &args.name {
         ipc::start_listener(name.clone(), tx.clone());
     }
+
+    let mut notifications = NotificationState::new(&args)?;
 
     terminal::enable_raw_mode()?;
     match (args.fullscreen, args.no_status, args.no_ui) {
@@ -46,14 +51,25 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     io::stdout().execute(cursor::Hide)?;
 
+    notifications.force_update(&timer);
+
     let mut run_loop = || -> Result<(), Box<dyn Error>> {
         loop {
             // Handle keyboard input
             match input::read_input(Duration::from_millis(50)) {
                 InputEvent::Quit => break,
-                InputEvent::TogglePause => timer.toggle_pause(),
-                InputEvent::Pause => timer.pause(),
-                InputEvent::Resume => timer.resume(),
+                InputEvent::TogglePause => {
+                    timer.toggle_pause();
+                    notifications.force_update(&timer);
+                }
+                InputEvent::Pause => {
+                    timer.pause();
+                    notifications.force_update(&timer);
+                }
+                InputEvent::Resume => {
+                    timer.resume();
+                    notifications.force_update(&timer);
+                }
                 InputEvent::None => {}
             }
 
@@ -61,18 +77,30 @@ fn main() -> Result<(), Box<dyn Error>> {
             while let Ok(event) = rx.try_recv() {
                 match event {
                     InputEvent::Quit => return Ok(()),
-                    InputEvent::TogglePause => timer.toggle_pause(),
-                    InputEvent::Pause => timer.pause(),
-                    InputEvent::Resume => timer.resume(),
+                    InputEvent::TogglePause => {
+                        timer.toggle_pause();
+                        notifications.force_update(&timer);
+                    }
+                    InputEvent::Pause => {
+                        timer.pause();
+                        notifications.force_update(&timer);
+                    }
+                    InputEvent::Resume => {
+                        timer.resume();
+                        notifications.force_update(&timer);
+                    }
                     InputEvent::None => {}
                 }
             }
+
+            notifications.update(&timer);
 
             if !args.no_ui {
                 ui.draw(&timer, args.color, args.fullscreen, args.no_status)?;
             }
 
             if timer.is_finished() {
+                notifications.force_update(&timer);
                 break;
             }
         }

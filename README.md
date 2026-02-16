@@ -23,6 +23,12 @@ cd timerrs
 cargo build --release
 ```
 
+To build without dunst notification support:
+
+```bash
+cargo build --release --no-default-features
+```
+
 ### For Arch based systems
 
 A package for timerrs can be found on the AUR [here](https://aur.archlinux.org/packages/timerrs), or use your favourite AUR helper (yay, paru, etc.):
@@ -47,6 +53,7 @@ Options:
   -f, --fullscreen     Run the timer in fullscreen mode (clears terminal and centers UI)
   -v, --verbose        Enable verbose logging
   -s, --no-status      Disable the status bar
+  -N, --notify         Enable dunst notifications with progress bar
   -h, --help           Print help
   -V, --version        Print version
 ```

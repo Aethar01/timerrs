@@ -26,12 +26,17 @@ pub struct Args {
     pub verbose: bool,
 
     /// Disable the status bar
-    #[arg(short='s', long)]
+    #[arg(short = 's', long)]
     pub no_status: bool,
 
     /// Disable the UI
-    #[arg(short='u', long)]
+    #[arg(short = 'u', long)]
     pub no_ui: bool,
+
+    /// Enable dunst notifications with progress bar
+    #[cfg(feature = "notify")]
+    #[arg(short = 'N', long)]
+    pub notify: bool,
 }
 
 fn parse_duration(arg: &str) -> Result<Duration, humantime::DurationError> {
