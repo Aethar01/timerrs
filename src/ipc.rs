@@ -1,9 +1,9 @@
+use crate::input::InputEvent;
 use std::fs;
 use std::io::Read;
 use std::os::unix::net::UnixListener;
 use std::sync::mpsc::Sender;
 use std::thread;
-use crate::input::InputEvent;
 
 pub fn start_listener(name: String, tx: Sender<InputEvent>) {
     let socket_path = format!("/tmp/timerrs_{}.sock", name);

@@ -6,7 +6,7 @@ use std::process::exit;
 #[derive(Parser, Debug)]
 #[command(version, about = "Control running timerrs instances", long_about = None)]
 struct Args {
-    /// Name of the timer to control
+    /// Name of the timer to control (Un-named timers cannot be controlled)
     name: String,
 
     /// Command to send to the timer
@@ -41,7 +41,10 @@ fn main() {
     let mut stream = match UnixStream::connect(&socket_path) {
         Ok(stream) => stream,
         Err(e) => {
-            eprintln!("Error connecting to timer '{}' at {}: {}", args.name, socket_path, e);
+            eprintln!(
+                "Error connecting to timer '{}' at {}: {}",
+                args.name, socket_path, e
+            );
             exit(1);
         }
     };
@@ -50,6 +53,4 @@ fn main() {
         eprintln!("Error writing to socket: {}", e);
         exit(1);
     }
-
-    println!("Sent command '{:?}' to timer '{}'", args.command, args.name);
 }
