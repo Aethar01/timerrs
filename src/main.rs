@@ -22,19 +22,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut ui = Ui::new();
 
     terminal::enable_raw_mode()?;
-    match (args.fullscreen, args.no_status) {
-        (true, _) => {
+    match (args.fullscreen, args.no_status, args.no_ui) {
+        (true, _, false) => {
             io::stdout().execute(EnterAlternateScreen)?;
         }
-        (false, true) => {
+        (false, true, false) => {
             println!();
             io::stdout().execute(cursor::MoveUp(1))?;
         }
-        (false, false) => {
+        (false, false, false) => {
             println!();
             println!();
             io::stdout().execute(cursor::MoveUp(2))?;
         }
+        (_, _, true) => {}
     }
     io::stdout().execute(cursor::Hide)?;
 
@@ -46,7 +47,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 InputEvent::None => {}
             }
 
-            ui.draw(&timer, args.color, args.fullscreen, args.no_status)?;
+            if !args.no_ui {
+                ui.draw(&timer, args.color, args.fullscreen, args.no_status)?;
+            }
 
             if timer.is_finished() {
                 break;
@@ -58,16 +61,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let res = run_loop();
 
     // cleanup
-    match (args.fullscreen, args.no_status) {
-        (true, _) => {
+    match (args.fullscreen, args.no_status, args.no_ui) {
+        (true, _, false) => {
             io::stdout().execute(LeaveAlternateScreen)?;
         }
-        (false, true) => {
+        (false, true, false) => {
             io::stdout().execute(cursor::MoveDown(1))?;
         }
-        (false, false) => {
+        (false, false, false) => {
             io::stdout().execute(cursor::MoveDown(2))?;
         }
+        (_, _, true) => {}
     }
     ui.conemu_reset_progress()?;
     io::stdout().execute(cursor::MoveToColumn(0))?;

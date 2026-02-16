@@ -28,6 +28,10 @@ pub struct Args {
     /// Disable the status bar
     #[arg(short='s', long)]
     pub no_status: bool,
+
+    /// Disable the UI
+    #[arg(short='u', long)]
+    pub no_ui: bool,
 }
 
 fn parse_duration(arg: &str) -> Result<Duration, humantime::DurationError> {
