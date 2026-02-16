@@ -15,6 +15,7 @@ Inspired by [timer](https://github.com/caarlos0/timer).
 
 ### Optional Dependencies
 
+- [dunst](https://dunst-project.org) (for notifications)
 - [libnotify](https://github.com/GNOME/libnotify) (for notify-send utility)
 
 ### From Source
@@ -52,7 +53,7 @@ Options:
   -v, --verbose        Enable verbose logging
   -s, --no-status      Disable the status bar
   -u, --no-ui          Disable the UI
-  -N, --notify         Enable dunst notifications with progress bar
+  -N, --notify         Enable dunst notifications with progress bar (requires dunst and libnotify)
   -h, --help           Print help
   -V, --version        Print version
 ```

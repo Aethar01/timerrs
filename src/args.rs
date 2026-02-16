@@ -33,7 +33,7 @@ pub struct Args {
     #[arg(short = 'u', long)]
     pub no_ui: bool,
 
-    /// Enable dunst notifications with progress bar
+    /// Enable dunst notifications with progress bar (requires dunst and libnotify)
     #[arg(short = 'N', long)]
     pub notify: bool,
 }
