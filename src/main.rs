@@ -8,8 +8,9 @@ mod ui;
 use args::Args;
 use clap::Parser;
 use crossterm::{
-    ExecutableCommand, cursor,
+    cursor,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
 use input::InputEvent;
 use notification::NotificationState;
@@ -33,7 +34,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut notifications = NotificationState::new(&args)?;
 
-    terminal::enable_raw_mode()?;
+    if !args.no_ui {
+        terminal::disable_raw_mode()?;
+    }
     match (args.fullscreen, args.no_status, args.no_ui) {
         (true, _, false) => {
             io::stdout().execute(EnterAlternateScreen)?;
@@ -49,28 +52,34 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         (_, _, true) => {}
     }
-    io::stdout().execute(cursor::Hide)?;
+    if !args.no_ui {
+        io::stdout().execute(cursor::Hide)?;
+    }
 
     notifications.force_update(&timer);
 
     let mut run_loop = || -> Result<(), Box<dyn Error>> {
         loop {
             // Handle keyboard input
-            match input::read_input(Duration::from_millis(50)) {
-                InputEvent::Quit => break,
-                InputEvent::TogglePause => {
-                    timer.toggle_pause();
-                    notifications.force_update(&timer);
+            if !args.no_ui {
+                match input::read_input(Duration::from_millis(50)) {
+                    InputEvent::Quit => break,
+                    InputEvent::TogglePause => {
+                        timer.toggle_pause();
+                        notifications.force_update(&timer);
+                    }
+                    InputEvent::Pause => {
+                        timer.pause();
+                        notifications.force_update(&timer);
+                    }
+                    InputEvent::Resume => {
+                        timer.resume();
+                        notifications.force_update(&timer);
+                    }
+                    InputEvent::None => {}
                 }
-                InputEvent::Pause => {
-                    timer.pause();
-                    notifications.force_update(&timer);
-                }
-                InputEvent::Resume => {
-                    timer.resume();
-                    notifications.force_update(&timer);
-                }
-                InputEvent::None => {}
+            } else {
+                std::thread::sleep(Duration::from_millis(50));
             }
 
             // Handle IPC input
@@ -125,9 +134,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         (_, _, true) => {}
     }
-    ui.conemu_reset_progress()?;
-    io::stdout().execute(cursor::MoveToColumn(0))?;
-    terminal::disable_raw_mode()?;
+    if !args.no_ui {
+        ui.conemu_reset_progress()?;
+        io::stdout().execute(cursor::MoveToColumn(0))?;
+        terminal::disable_raw_mode()?;
+    }
 
     if let Err(e) = res {
         eprintln!("Error: {}", e);

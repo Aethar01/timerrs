@@ -1,8 +1,9 @@
 use crate::timer::Timer;
 use crossterm::{
-    QueueableCommand, cursor,
+    cursor,
     style::{Color, Print, Stylize},
     terminal::{self, Clear, ClearType},
+    QueueableCommand,
 };
 use std::io::{self, Stdout, Write};
 use std::time::Duration;
