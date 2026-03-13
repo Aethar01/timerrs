@@ -10,9 +10,9 @@ pub enum InputEvent {
 }
 
 pub fn read_input(timeout: Duration) -> InputEvent {
-    if event::poll(timeout).unwrap_or(false) {
-        if let Ok(Event::Key(key)) = event::read() {
-            if key.kind == KeyEventKind::Press {
+    if event::poll(timeout).unwrap_or(false)
+        && let Ok(Event::Key(key)) = event::read()
+            && key.kind == KeyEventKind::Press {
                 match key.code {
                     KeyCode::Char('q') | KeyCode::Esc => return InputEvent::Quit,
                     KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
@@ -23,7 +23,5 @@ pub fn read_input(timeout: Duration) -> InputEvent {
                     _ => {}
                 }
             }
-        }
-    }
     InputEvent::None
 }

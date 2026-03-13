@@ -10,8 +10,8 @@ pub struct NotificationState {
 
 impl NotificationState {
     pub fn new(args: &Args) -> Result<Self, String> {
-        if args.notify {
-            if Command::new("notify-send")
+        if args.notify
+            && Command::new("notify-send")
                 .arg("--version")
                 .stdout(std::process::Stdio::null())
                 .stderr(std::process::Stdio::null())
@@ -22,7 +22,6 @@ impl NotificationState {
                     "notify-send not found. Please install it to use notifications.".into(),
                 );
             }
-        }
         Ok(Self {
             last_notify: Instant::now(),
             enabled: args.notify,

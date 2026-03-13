@@ -24,7 +24,7 @@ pub fn start_listener(name: String, tx: Sender<InputEvent>) {
             match stream {
                 Ok(mut s) => {
                     let mut buf = String::new();
-                    if let Ok(_) = s.read_to_string(&mut buf) {
+                    if s.read_to_string(&mut buf).is_ok() {
                         let event = match buf.as_str() {
                             "pause" => Some(InputEvent::Pause),
                             "resume" => Some(InputEvent::Resume),
