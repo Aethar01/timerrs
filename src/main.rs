@@ -21,7 +21,20 @@ use timer::Timer;
 use ui::Ui;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args = Args::parse();
+    let mut args = Args::parse();
+
+    if args.name.is_none() {
+        let mut i = 1;
+        loop {
+            let name = format!("Timer_{}", i);
+            let socket_path = format!("/tmp/timerrs_{}.sock", name);
+            if std::os::unix::net::UnixStream::connect(&socket_path).is_err() {
+                args.name = Some(name);
+                break;
+            }
+            i += 1;
+        }
+    }
 
     let mut timer = Timer::new(args.name.clone(), args.duration);
     let mut ui = Ui::new();
@@ -34,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut notifications = NotificationState::new(&args)?;
 
     if !args.no_ui {
-        terminal::disable_raw_mode()?;
+        terminal::enable_raw_mode()?;
     }
     match (args.fullscreen, args.no_status, args.no_ui) {
         (true, _, false) => {

@@ -39,9 +39,14 @@ fn main() {
                         && file_name.starts_with(prefix)
                         && file_name.ends_with(extension)
                     {
-                        let name = &file_name[prefix.len()..file_name.len() - extension.len()];
-                        println!("{}", name);
-                        found = true;
+                        if UnixStream::connect(entry.path()).is_ok() {
+                            let name = &file_name[prefix.len()..file_name.len() - extension.len()];
+                            println!("{}", name);
+                            found = true;
+                        } else {
+                            // Clean up dead sockets
+                            let _ = fs::remove_file(entry.path());
+                        }
                     }
                 }
             }
@@ -62,10 +67,17 @@ fn send_command(name: &str, cmd: &str) {
     let mut stream = match UnixStream::connect(&socket_path) {
         Ok(stream) => stream,
         Err(e) => {
-            eprintln!(
-                "Error connecting to timer '{}' at {}: {}",
-                name, socket_path, e
-            );
+            if e.kind() == std::io::ErrorKind::ConnectionRefused {
+                let _ = fs::remove_file(&socket_path);
+                eprintln!("Timer '{}' is not running.", name);
+            } else if e.kind() == std::io::ErrorKind::NotFound {
+                eprintln!("Timer '{}' is not running.", name);
+            } else {
+                eprintln!(
+                    "Error connecting to timer '{}' at {}: {}",
+                    name, socket_path, e
+                );
+            }
             exit(1);
         }
     };
