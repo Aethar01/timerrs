@@ -1,10 +1,10 @@
 mod socket;
 
 use clap::{Parser, Subcommand};
+use std::error::Error;
 use std::fs;
 use std::io::Write;
 use std::os::unix::net::UnixStream;
-use std::process::exit;
 
 #[derive(Parser, Debug)]
 #[command(version, about = "Control running timerrs instances", long_about = None)]
@@ -27,19 +27,21 @@ enum Command {
     Quit { name: String },
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
     match args.command {
-        Command::List => list_timers(),
-        Command::Pause { name } => send_command(&name, "pause"),
-        Command::Resume { name } => send_command(&name, "resume"),
-        Command::Toggle { name } => send_command(&name, "toggle"),
-        Command::Quit { name } => send_command(&name, "quit"),
+        Command::List => list_timers()?,
+        Command::Pause { name } => send_command(&name, "pause")?,
+        Command::Resume { name } => send_command(&name, "resume")?,
+        Command::Toggle { name } => send_command(&name, "toggle")?,
+        Command::Quit { name } => send_command(&name, "quit")?,
     }
+
+    Ok(())
 }
 
-fn list_timers() {
+fn list_timers() -> Result<(), Box<dyn Error>> {
     let mut found = false;
 
     if let Ok(entries) = fs::read_dir(socket::SOCKET_DIR) {
@@ -55,7 +57,6 @@ fn list_timers() {
                 println!("{}", name);
                 found = true;
             } else {
-                // Clean up dead sockets
                 let _ = fs::remove_file(path);
             }
         }
@@ -64,9 +65,11 @@ fn list_timers() {
     if !found {
         println!("No running timers found.");
     }
+
+    Ok(())
 }
 
-fn send_command(name: &str, cmd: &str) {
+fn send_command(name: &str, cmd: &str) -> Result<(), Box<dyn Error>> {
     let socket_path = socket::get_socket_path(name);
 
     let mut stream = match UnixStream::connect(&socket_path) {
@@ -74,23 +77,22 @@ fn send_command(name: &str, cmd: &str) {
         Err(e) => {
             if e.kind() == std::io::ErrorKind::ConnectionRefused {
                 let _ = fs::remove_file(&socket_path);
-                eprintln!("Timer '{}' is not running.", name);
+                return Err(format!("Timer '{}' is not running.", name).into());
             } else if e.kind() == std::io::ErrorKind::NotFound {
-                eprintln!("Timer '{}' is not running.", name);
+                return Err(format!("Timer '{}' is not running.", name).into());
             } else {
-                eprintln!(
+                return Err(format!(
                     "Error connecting to timer '{}' at {}: {}",
                     name,
                     socket_path.display(),
                     e
-                );
+                )
+                .into());
             }
-            exit(1);
         }
     };
 
-    if let Err(e) = stream.write_all(cmd.as_bytes()) {
-        eprintln!("Error writing to socket: {}", e);
-        exit(1);
-    }
+    stream.write_all(cmd.as_bytes())?;
+
+    Ok(())
 }

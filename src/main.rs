@@ -171,7 +171,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 None => eprintln!("Timer cancelled."),
             }
         }
-        std::process::exit(1);
+        exit(1);
     }
     Ok(())
 }
