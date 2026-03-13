@@ -15,7 +15,6 @@ Inspired by [timer](https://github.com/caarlos0/timer).
 
 ### Optional Dependencies
 
-- [dunst](https://dunst-project.org) (for notifications)
 - [libnotify](https://github.com/GNOME/libnotify) (for notify-send utility)
 
 ### From Source
