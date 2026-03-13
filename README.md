@@ -77,11 +77,15 @@ Options:
 ```bash
 Control running timerrs instances
 
-Usage: timerrsctl <NAME> <COMMAND>
+Usage: timerrsctl <COMMAND>
 
-Arguments:
-  <NAME>     Name of the timer to control (unnamed timers cannot be controlled)
-  <COMMAND>  Command to send to the timer [possible values: pause, resume, toggle, quit]
+Commands:
+  list    List all running timers
+  pause   Pause a timer
+  resume  Resume a timer
+  toggle  Toggle a timer's paused state
+  quit    Quit a timer
+  help    Print this message or the help of the given subcommand(s)
 
 Options:
   -h, --help     Print help
@@ -92,13 +96,12 @@ Options:
 
 | Command | Action                 |
 | ---     | ---                    |
+| `list`   | List all running timers |
 | `pause`  | Pause the timer        |
 | `resume` | Resume the timer       |
 | `toggle` | Pause/Resume the timer |
 | `quit`   | Quit the timer         |
 
-Note: `timerrsctl` only works if the `timerrs` instance was started with `--name`.
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GPL V2.0 License - see the [LICENSE](LICENSE) file for details.
