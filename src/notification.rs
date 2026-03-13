@@ -69,7 +69,10 @@ impl NotificationState {
             .arg("-h")
             .arg(format!("int:value:{}", progress))
             .arg("-h")
-            .arg(format!("string:x-canonical-private-synchronous:{}", stack_tag))
+            .arg(format!(
+                "string:x-canonical-private-synchronous:{}",
+                stack_tag
+            ))
             .arg("-a")
             .arg("timerrs");
 

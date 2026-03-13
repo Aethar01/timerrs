@@ -8,9 +8,8 @@ mod ui;
 use args::Args;
 use clap::Parser;
 use crossterm::{
-    cursor,
+    ExecutableCommand, cursor,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
 };
 use input::InputEvent;
 use notification::NotificationState;
