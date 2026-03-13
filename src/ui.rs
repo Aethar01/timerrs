@@ -1,11 +1,25 @@
 use crate::timer::Timer;
 use crossterm::{
-    QueueableCommand, cursor,
+    cursor,
     style::{Color, Print, Stylize},
     terminal::{self, Clear, ClearType},
+    QueueableCommand,
 };
 use std::io::{self, Stdout, Write};
 use std::time::Duration;
+
+struct DrawBarArgs<'a> {
+    progress: f64,
+    color: Color,
+    fullscreen: bool,
+    no_status: bool,
+    full_clear: bool,
+    center_row: u16,
+    text_row: u16,
+    bar_start_col: usize,
+    bar_width: usize,
+    percent_str: &'a str,
+}
 
 pub struct Ui {
     stdout: Stdout,
@@ -53,7 +67,7 @@ impl Ui {
             _ => {}
         }
 
-        self.draw_bar(
+        self.draw_bar(&DrawBarArgs {
             progress,
             color,
             fullscreen,
@@ -63,8 +77,8 @@ impl Ui {
             text_row,
             bar_start_col,
             bar_width,
-            &percent_str,
-        )?;
+            percent_str: &percent_str,
+        })?;
 
         let conemu_state = if timer.is_paused { 4 } else { 1 };
         self.set_conemu_progress(conemu_state, (progress * 100.0) as u16)?;
@@ -170,39 +184,27 @@ impl Ui {
         Ok(())
     }
 
-    fn draw_bar(
-        &mut self,
-        progress: f64,
-        color: Color,
-        fullscreen: bool,
-        no_status: bool,
-        full_clear: bool,
-        center_row: u16,
-        text_row: u16,
-        bar_start_col: usize,
-        bar_width: usize,
-        percent_str: &str,
-    ) -> io::Result<()> {
-        let filled_width = (progress * bar_width as f64) as usize;
-        let empty_width = bar_width.saturating_sub(filled_width);
+    fn draw_bar(&mut self, args: &DrawBarArgs) -> io::Result<()> {
+        let filled_width = (args.progress * args.bar_width as f64) as usize;
+        let empty_width = args.bar_width.saturating_sub(filled_width);
 
-        let filled_bar = "\u{2588}".repeat(filled_width);
-        let empty_bar = "\u{2591}".repeat(empty_width);
+        let filled_bar = "█".repeat(filled_width);
+        let empty_bar = "░".repeat(empty_width);
 
-        match fullscreen {
+        match args.fullscreen {
             true => {
-                let bar_row = match no_status {
-                    true => center_row,
-                    false => text_row + 1,
+                let bar_row = match args.no_status {
+                    true => args.center_row,
+                    false => args.text_row + 1,
                 };
                 self.stdout
-                    .queue(cursor::MoveTo(bar_start_col as u16, bar_row))?;
-                if no_status && !full_clear {
+                    .queue(cursor::MoveTo(args.bar_start_col as u16, bar_row))?;
+                if args.no_status && !args.full_clear {
                     self.stdout.queue(Clear(ClearType::CurrentLine))?;
                 }
             }
             false => {
-                if !no_status {
+                if !args.no_status {
                     self.stdout.queue(cursor::MoveDown(1))?;
                 }
                 self.stdout
@@ -212,11 +214,11 @@ impl Ui {
         }
 
         self.stdout
-            .queue(Print(filled_bar.with(color)))?
+            .queue(Print(filled_bar.with(args.color)))?
             .queue(Print(empty_bar.with(Color::DarkGrey)))?
-            .queue(Print(percent_str))?;
+            .queue(Print(args.percent_str))?;
 
-        if !fullscreen && !no_status {
+        if !args.fullscreen && !args.no_status {
             self.stdout.queue(cursor::MoveUp(1))?;
         }
 
