@@ -2,6 +2,7 @@ mod args;
 mod input;
 mod ipc;
 mod notification;
+mod socket;
 mod timer;
 mod ui;
 
@@ -15,6 +16,8 @@ use input::InputEvent;
 use notification::NotificationState;
 use std::error::Error;
 use std::io;
+use std::os::unix::net::UnixStream;
+use std::process::exit;
 use std::sync::mpsc;
 use std::time::Duration;
 use timer::Timer;
@@ -23,17 +26,17 @@ use ui::Ui;
 fn main() -> Result<(), Box<dyn Error>> {
     let mut args = Args::parse();
 
-    if args.name.is_none() {
-        let mut i = 1;
-        loop {
-            let name = format!("Timer_{}", i);
-            let socket_path = format!("/tmp/timerrs_{}.sock", name);
-            if std::os::unix::net::UnixStream::connect(&socket_path).is_err() {
-                args.name = Some(name);
-                break;
-            }
-            i += 1;
+    if let Some(name) = &args.name {
+        let socket_path = crate::socket::get_socket_path(name);
+        if UnixStream::connect(&socket_path).is_ok() {
+            eprintln!("Error: Timer '{}' already exists.", name);
+            exit(1);
         }
+    } else {
+        args.name = (1..).map(|i| format!("Timer_{}", i)).find(|name| {
+            let socket_path = crate::socket::get_socket_path(name);
+            UnixStream::connect(&socket_path).is_err()
+        });
     }
 
     let mut timer = Timer::new(args.name.clone(), args.duration);

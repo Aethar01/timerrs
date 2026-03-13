@@ -1,3 +1,5 @@
+mod socket;
+
 use clap::{Parser, Subcommand};
 use std::fs;
 use std::io::Write;
@@ -27,33 +29,9 @@ enum Command {
 
 fn main() {
     let args = Args::parse();
-    let prefix: &'static str = "timerrs_";
-    let extension: &'static str = ".sock";
 
     match args.command {
-        Command::List => {
-            let mut found = false;
-            if let Ok(entries) = fs::read_dir("/tmp") {
-                for entry in entries.flatten() {
-                    if let Some(file_name) = entry.file_name().to_str()
-                        && file_name.starts_with(prefix)
-                        && file_name.ends_with(extension)
-                    {
-                        if UnixStream::connect(entry.path()).is_ok() {
-                            let name = &file_name[prefix.len()..file_name.len() - extension.len()];
-                            println!("{}", name);
-                            found = true;
-                        } else {
-                            // Clean up dead sockets
-                            let _ = fs::remove_file(entry.path());
-                        }
-                    }
-                }
-            }
-            if !found {
-                println!("No running timers found.");
-            }
-        }
+        Command::List => list_timers(),
         Command::Pause { name } => send_command(&name, "pause"),
         Command::Resume { name } => send_command(&name, "resume"),
         Command::Toggle { name } => send_command(&name, "toggle"),
@@ -61,8 +39,35 @@ fn main() {
     }
 }
 
+fn list_timers() {
+    let mut found = false;
+
+    if let Ok(entries) = fs::read_dir(socket::SOCKET_DIR) {
+        let timers = entries.flatten().filter_map(|entry| {
+            let file_name = entry.file_name();
+            let file_name_str = file_name.to_str()?;
+            let name = socket::get_socket_name(file_name_str)?.to_string();
+            Some((entry.path(), name))
+        });
+
+        for (path, name) in timers {
+            if UnixStream::connect(&path).is_ok() {
+                println!("{}", name);
+                found = true;
+            } else {
+                // Clean up dead sockets
+                let _ = fs::remove_file(path);
+            }
+        }
+    }
+
+    if !found {
+        println!("No running timers found.");
+    }
+}
+
 fn send_command(name: &str, cmd: &str) {
-    let socket_path = format!("/tmp/timerrs_{}.sock", name);
+    let socket_path = socket::get_socket_path(name);
 
     let mut stream = match UnixStream::connect(&socket_path) {
         Ok(stream) => stream,
@@ -75,7 +80,9 @@ fn send_command(name: &str, cmd: &str) {
             } else {
                 eprintln!(
                     "Error connecting to timer '{}' at {}: {}",
-                    name, socket_path, e
+                    name,
+                    socket_path.display(),
+                    e
                 );
             }
             exit(1);
