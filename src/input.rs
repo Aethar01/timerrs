@@ -5,23 +5,22 @@ pub enum InputEvent {
     None,
     Quit,
     TogglePause,
-    Pause,
-    Resume,
 }
 
 pub fn read_input(timeout: Duration) -> InputEvent {
     if event::poll(timeout).unwrap_or(false)
         && let Ok(Event::Key(key)) = event::read()
-            && key.kind == KeyEventKind::Press {
-                match key.code {
-                    KeyCode::Char('q') | KeyCode::Esc => return InputEvent::Quit,
-                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        return InputEvent::Quit;
-                    }
-                    KeyCode::Char('p') => return InputEvent::TogglePause,
-                    KeyCode::Char(' ') => return InputEvent::TogglePause,
-                    _ => {}
-                }
+        && key.kind == KeyEventKind::Press
+    {
+        match key.code {
+            KeyCode::Char('q') | KeyCode::Esc => return InputEvent::Quit,
+            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                return InputEvent::Quit;
             }
+            KeyCode::Char('p') => return InputEvent::TogglePause,
+            KeyCode::Char(' ') => return InputEvent::TogglePause,
+            _ => {}
+        }
+    }
     InputEvent::None
 }
