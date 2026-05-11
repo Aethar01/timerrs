@@ -67,40 +67,6 @@ Options:
 | `p`      | Pause/Resume the timer |
 | `space`  | Pause/Resume the timer |
 
-## timerrsctl
-
-`timerrsctl` is a tool to control running `timerrs` instances.
-
-### Usage
-
-```bash
-Control running timerrs instances
-
-Usage: timerrsctl <COMMAND>
-
-Commands:
-  list    List all running timers
-  pause   Pause a timer
-  resume  Resume a timer
-  toggle  Toggle a timer's paused state
-  quit    Quit a timer
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-  -h, --help     Print help
-  -V, --version  Print version
-```
-
-### Commands
-
-| Command | Action                 |
-| ---     | ---                    |
-| `list`   | List all running timers |
-| `pause`  | Pause the timer        |
-| `resume` | Resume the timer       |
-| `toggle` | Pause/Resume the timer |
-| `quit`   | Quit the timer         |
-
 ## License
 
 This project is licensed under the GPL V2.0 License - see the [LICENSE](LICENSE) file for details.

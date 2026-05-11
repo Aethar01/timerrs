@@ -1,8 +1,6 @@
 mod args;
 mod input;
-mod ipc;
 mod notification;
-mod socket;
 mod timer;
 mod ui;
 
@@ -16,36 +14,16 @@ use input::InputEvent;
 use notification::NotificationState;
 use std::error::Error;
 use std::io;
-use std::os::unix::net::UnixStream;
 use std::process::exit;
-use std::sync::mpsc;
 use std::time::Duration;
 use timer::Timer;
 use ui::Ui;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut args = Args::parse();
-
-    if let Some(name) = &args.name {
-        let socket_path = crate::socket::get_socket_path(name);
-        if UnixStream::connect(&socket_path).is_ok() {
-            eprintln!("Error: Timer '{}' already exists.", name);
-            exit(1);
-        }
-    } else {
-        args.name = (1..).map(|i| format!("Timer_{}", i)).find(|name| {
-            let socket_path = crate::socket::get_socket_path(name);
-            UnixStream::connect(&socket_path).is_err()
-        });
-    }
+    let args = Args::parse();
 
     let mut timer = Timer::new(args.name.clone(), args.duration);
     let mut ui = Ui::new();
-
-    let (tx, rx) = mpsc::channel();
-    if let Some(name) = &args.name {
-        ipc::start_listener(name.clone(), tx.clone());
-    }
 
     let mut notifications = NotificationState::new(&args)?;
 
@@ -83,38 +61,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                         timer.toggle_pause();
                         notifications.force_update(&timer);
                     }
-                    InputEvent::Pause => {
-                        timer.pause();
-                        notifications.force_update(&timer);
-                    }
-                    InputEvent::Resume => {
-                        timer.resume();
-                        notifications.force_update(&timer);
-                    }
                     InputEvent::None => {}
                 }
             } else {
                 std::thread::sleep(Duration::from_millis(50));
-            }
-
-            // Handle IPC input
-            while let Ok(event) = rx.try_recv() {
-                match event {
-                    InputEvent::Quit => return Ok(()),
-                    InputEvent::TogglePause => {
-                        timer.toggle_pause();
-                        notifications.force_update(&timer);
-                    }
-                    InputEvent::Pause => {
-                        timer.pause();
-                        notifications.force_update(&timer);
-                    }
-                    InputEvent::Resume => {
-                        timer.resume();
-                        notifications.force_update(&timer);
-                    }
-                    InputEvent::None => {}
-                }
             }
 
             notifications.update(&timer);
@@ -133,10 +83,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let res = run_loop();
 
-    // cleanup
-    if let Some(name) = &args.name {
-        ipc::cleanup(name);
-    }
     match (args.fullscreen, args.no_status, args.no_ui) {
         (true, _, false) => {
             io::stdout().execute(LeaveAlternateScreen)?;

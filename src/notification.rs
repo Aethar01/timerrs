@@ -17,11 +17,9 @@ impl NotificationState {
                 .stderr(std::process::Stdio::null())
                 .spawn()
                 .is_err()
-            {
-                return Err(
-                    "notify-send not found. Please install it to use notifications.".into(),
-                );
-            }
+        {
+            return Err("notify-send not found. Please install it to use notifications.".into());
+        }
         Ok(Self {
             last_notify: Instant::now(),
             enabled: args.notify,
