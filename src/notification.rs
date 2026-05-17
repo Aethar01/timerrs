@@ -15,7 +15,7 @@ impl NotificationState {
                 .arg("--version")
                 .stdout(std::process::Stdio::null())
                 .stderr(std::process::Stdio::null())
-                .spawn()
+                .status()
                 .is_err()
         {
             return Err("notify-send not found. Please install it to use notifications.".into());

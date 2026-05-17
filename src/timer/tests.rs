@@ -88,6 +88,13 @@ fn test_timer_finished() {
 }
 
 #[test]
+fn test_timer_zero_duration_progress() {
+    let duration = Duration::ZERO;
+    let timer = Timer::new(None, duration);
+    assert_eq!(timer.progress(), 1.0);
+}
+
+#[test]
 fn test_timer_not_finished() {
     let duration = Duration::from_secs(3600);
     let timer = Timer::new(None, duration);

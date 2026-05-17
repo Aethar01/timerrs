@@ -66,6 +66,10 @@ impl Timer {
     }
 
     pub fn progress(&self) -> f64 {
+        if self.duration.is_zero() {
+            return 1.0;
+        }
+
         let remaining = self.remaining_time();
         let elapsed = self.duration.as_secs_f64() - remaining.as_secs_f64();
         (elapsed / self.duration.as_secs_f64()).clamp(0.0, 1.0)
